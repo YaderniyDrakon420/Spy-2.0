@@ -2,15 +2,14 @@
 using System.Diagnostics;
 using System.IO;
 using System.Management;
-using System.Windows.Forms;
 using Spy_2._0.Models;
 
 namespace Spy_2._0.Services
 {
     public class ProcessWatcher
     {
-        private ManagementEventWatcher _watcher;
         private readonly AppSettings _settings;
+        private ManagementEventWatcher _watcher;
 
         public ProcessWatcher(AppSettings settings)
         {
@@ -23,59 +22,46 @@ namespace Spy_2._0.Services
             {
                 string query = "SELECT * FROM Win32_ProcessStartTrace";
                 _watcher = new ManagementEventWatcher(new WqlEventQuery(query));
-                _watcher.EventArrived += ProcessStarted;
+                _watcher.EventArrived += Watcher_EventArrived;
                 _watcher.Start();
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Ошибка запуска ProcessWatcher: " + ex.Message);
+                System.Windows.Forms.MessageBox.Show("Ошибка ProcessWatcher: " + ex.Message);
             }
+        }
+
+        private void Watcher_EventArrived(object sender, EventArrivedEventArgs e)
+        {
+            string processRaw = e.NewEvent.Properties["ProcessName"].Value.ToString();
+            string processName = Path.GetFileNameWithoutExtension(processRaw);
+            DateTime startTime = DateTime.Now;
+
+            if (!Directory.Exists(_settings.ReportsPath)) Directory.CreateDirectory(_settings.ReportsPath);
+            string filePath = Path.Combine(_settings.ReportsPath, "process_log.txt");
+            string logLine = $"{startTime:yyyy-MM-dd HH:mm:ss} - {processRaw}";
+
+            if (_settings.Moderation && _settings.ForbiddenPrograms.Contains(processName, StringComparer.OrdinalIgnoreCase))
+            {
+                try
+                {
+                    foreach (var proc in Process.GetProcessesByName(processName))
+                        proc.Kill();
+                    logLine = $"{startTime:yyyy-MM-dd HH:mm:ss} - BLOCKED {processRaw}";
+                }
+                catch (Exception ex)
+                {
+                    logLine = $"{startTime:yyyy-MM-dd HH:mm:ss} - ERROR closing {processRaw}: {ex.Message}";
+                }
+            }
+
+            File.AppendAllText(filePath, logLine + Environment.NewLine);
         }
 
         public void Stop()
         {
             _watcher?.Stop();
             _watcher?.Dispose();
-        }
-
-        private void ProcessStarted(object sender, EventArrivedEventArgs e)
-        {
-            string processName = e.NewEvent.Properties["ProcessName"].Value.ToString();
-            DateTime startTime = DateTime.Now;
-
-            string path = _settings.ReportsPath;
-            if (string.IsNullOrWhiteSpace(path))
-                path = Path.Combine(Application.StartupPath, "Reports");
-
-            if (!Directory.Exists(path))
-                Directory.CreateDirectory(path);
-
-            string filePath = Path.Combine(path, "process_log.txt");
-
-            if (_settings.Moderation && _settings.ForbiddenPrograms != null)
-            {
-                if (_settings.ForbiddenPrograms.Contains(processName, StringComparer.OrdinalIgnoreCase))
-                {
-                    try
-                    {
-                        foreach (var proc in Process.GetProcessesByName(Path.GetFileNameWithoutExtension(processName)))
-                            proc.Kill();
-
-                        File.AppendAllText(filePath,
-                            $"{startTime:yyyy-MM-dd HH:mm:ss} - BLOCKED {processName}{Environment.NewLine}");
-                        return;
-                    }
-                    catch (Exception ex)
-                    {
-                        File.AppendAllText(filePath,
-                            $"{startTime:yyyy-MM-dd HH:mm:ss} - ERROR closing {processName}: {ex.Message}{Environment.NewLine}");
-                        return;
-                    }
-                }
-            }
-
-            File.AppendAllText(filePath,
-                $"{startTime:yyyy-MM-dd HH:mm:ss} - {processName}{Environment.NewLine}");
         }
     }
 }
