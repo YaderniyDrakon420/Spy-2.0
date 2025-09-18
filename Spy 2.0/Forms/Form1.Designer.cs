@@ -25,8 +25,7 @@ namespace Spy_2._0.Forms
         private Button btnViewJson;
         private Button btnRefreshLog;
         private Button btnClearLog;
-        private Button btnRefreshProcessLog;
-        private Button btnClearProcessLog;
+        private Button btnOpenTextInput;
 
         protected override void Dispose(bool disposing)
         {
@@ -53,107 +52,202 @@ namespace Spy_2._0.Forms
             btnViewJson = new Button();
             btnRefreshLog = new Button();
             btnClearLog = new Button();
-            btnRefreshProcessLog = new Button();
-            btnClearProcessLog = new Button();
-
+            btnOpenTextInput = new Button();
+            label1 = new Label();
             SuspendLayout();
-
-            txtPath.Location = new Point(12, 12);
-            txtPath.Size = new Size(560, 27);
-
-            btnSave.Location = new Point(578, 10);
-            btnSave.Size = new Size(183, 50);
-            btnSave.Text = "Сохранить";
-            btnSave.Click += btnSave_Click;
-
-            chkStatistics.Location = new Point(31, 44);
-            chkStatistics.Size = new Size(140, 51);
+            // 
+            // txtPath
+            // 
+            txtPath.Location = new Point(153, 12);
+            txtPath.Name = "txtPath";
+            txtPath.Size = new Size(1089, 27);
+            txtPath.TabIndex = 0;
+            // 
+            // btnSave
+            // 
+            btnSave.BackColor = Color.LimeGreen;
+            btnSave.Font = new Font("Segoe UI Symbol", 13.8F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            btnSave.Location = new Point(433, 490);
+            btnSave.Name = "btnSave";
+            btnSave.Size = new Size(452, 91);
+            btnSave.TabIndex = 1;
+            btnSave.Text = "Зберегти";
+            btnSave.UseVisualStyleBackColor = false;
+            // 
+            // chkStatistics
+            // 
+            chkStatistics.Location = new Point(910, 540);
+            chkStatistics.Name = "chkStatistics";
+            chkStatistics.Size = new Size(114, 25);
+            chkStatistics.TabIndex = 2;
             chkStatistics.Text = "Статистика";
-
-            chkModeration.Location = new Point(224, 45);
-            chkModeration.Size = new Size(141, 50);
-            chkModeration.Text = "Модерація";
-
-            ForbiddenWords.Location = new Point(31, 166);
-            ForbiddenWords.Size = new Size(281, 244);
-
-            txtNewWord.Location = new Point(31, 425);
-            txtNewWord.Size = new Size(220, 27);
-
-            btnAddWord.Location = new Point(257, 425);
-            btnAddWord.Size = new Size(74, 26);
-            btnAddWord.Text = "Добавить";
-            btnAddWord.Click += btnAddWord_Click;
-
-            btnRemoveWord.Location = new Point(31, 472);
-            btnRemoveWord.Size = new Size(300, 26);
-            btnRemoveWord.Text = "Удалить выбранное слово";
-            btnRemoveWord.Click += btnRemoveWord_Click;
-
-            ForbiddenPrograms.Location = new Point(368, 166);
-            ForbiddenPrograms.Size = new Size(304, 244);
-
-            txtNewProgram.Location = new Point(368, 424);
-            txtNewProgram.Size = new Size(220, 27);
-
-            btnAddProgram.Location = new Point(594, 424);
-            btnAddProgram.Size = new Size(118, 26);
-            btnAddProgram.Text = "Добавить программу";
-            btnAddProgram.Click += btnAddProgram_Click;
-
-            btnRemoveProgram.Location = new Point(368, 472);
-            btnRemoveProgram.Size = new Size(344, 26);
-            btnRemoveProgram.Text = "Удалить выбранную программу";
-            btnRemoveProgram.Click += btnRemoveProgram_Click;
-
-            btnViewLog.Location = new Point(749, 345);
-            btnViewLog.Size = new Size(367, 65);
-            btnViewLog.Text = "Просмотр log.txt";
-            btnViewLog.Click += btnViewLog_Click;
-
-            btnViewProcesses.Location = new Point(749, 166);
-            btnViewProcesses.Size = new Size(367, 66);
-            btnViewProcesses.Text = "Просмотр process_log.txt";
-            btnViewProcesses.Click += btnViewProcesses_Click;
-
-            btnViewJson.Location = new Point(749, 250);
-            btnViewJson.Size = new Size(367, 66);
-            btnViewJson.Text = "Просмотр settings.json";
-            btnViewJson.Click += btnViewJson_Click;
-
-            btnRefreshLog.Location = new Point(749, 430);
-            btnRefreshLog.Size = new Size(180, 40);
-            btnRefreshLog.Text = "Оновити звіт";
-            btnRefreshLog.Click += btnRefreshLog_Click;
-
-            btnClearLog.Location = new Point(936, 430);
-            btnClearLog.Size = new Size(180, 40);
-            btnClearLog.Text = "Очистити звіт";
-            btnClearLog.Click += btnClearLog_Click;
-
-            btnRefreshProcessLog.Location = new Point(749, 480);
-            btnRefreshProcessLog.Size = new Size(180, 40);
-            btnRefreshProcessLog.Text = "Оновити звіт процесів";
-            btnRefreshProcessLog.Click += btnRefreshProcessLog_Click;
-
-            btnClearProcessLog.Location = new Point(936, 480);
-            btnClearProcessLog.Size = new Size(180, 40);
-            btnClearProcessLog.Text = "Очистити звіт процесів";
-            btnClearProcessLog.Click += btnClearProcessLog_Click;
-
-            ClientSize = new Size(1150, 563);
-            Controls.AddRange(new Control[]
-            {
-                txtPath, btnSave, chkStatistics, chkModeration, ForbiddenWords, txtNewWord,
-                btnAddWord, btnRemoveWord, ForbiddenPrograms, txtNewProgram, btnAddProgram,
-                btnRemoveProgram, btnViewLog, btnViewProcesses, btnViewJson,
-                btnRefreshLog, btnClearLog, btnRefreshProcessLog, btnClearProcessLog
-            });
-
+            // 
+            // chkModeration
+            // 
+            chkModeration.Location = new Point(910, 490);
+            chkModeration.Name = "chkModeration";
+            chkModeration.Size = new Size(122, 34);
+            chkModeration.TabIndex = 3;
+            chkModeration.Text = "Модерацiя";
+            // 
+            // ForbiddenWords
+            // 
+            ForbiddenWords.BackColor = SystemColors.GradientActiveCaption;
+            ForbiddenWords.Location = new Point(213, 45);
+            ForbiddenWords.Name = "ForbiddenWords";
+            ForbiddenWords.Size = new Size(327, 244);
+            ForbiddenWords.TabIndex = 4;
+            // 
+            // txtNewWord
+            // 
+            txtNewWord.Location = new Point(210, 335);
+            txtNewWord.Name = "txtNewWord";
+            txtNewWord.Size = new Size(203, 27);
+            txtNewWord.TabIndex = 5;
+            // 
+            // btnAddWord
+            // 
+            btnAddWord.Location = new Point(432, 315);
+            btnAddWord.Name = "btnAddWord";
+            btnAddWord.Size = new Size(105, 63);
+            btnAddWord.TabIndex = 6;
+            btnAddWord.Text = "Додати слово";
+            // 
+            // btnRemoveWord
+            // 
+            btnRemoveWord.BackColor = Color.Firebrick;
+            btnRemoveWord.Font = new Font("Segoe UI Symbol", 10.2F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            btnRemoveWord.Location = new Point(210, 394);
+            btnRemoveWord.Name = "btnRemoveWord";
+            btnRemoveWord.Size = new Size(327, 61);
+            btnRemoveWord.TabIndex = 7;
+            btnRemoveWord.Text = "Видалити обране слово";
+            btnRemoveWord.UseVisualStyleBackColor = false;
+            // 
+            // ForbiddenPrograms
+            // 
+            ForbiddenPrograms.BackColor = SystemColors.GradientActiveCaption;
+            ForbiddenPrograms.Location = new Point(722, 45);
+            ForbiddenPrograms.Name = "ForbiddenPrograms";
+            ForbiddenPrograms.Size = new Size(327, 244);
+            ForbiddenPrograms.TabIndex = 8;
+            // 
+            // txtNewProgram
+            // 
+            txtNewProgram.Location = new Point(722, 335);
+            txtNewProgram.Name = "txtNewProgram";
+            txtNewProgram.Size = new Size(163, 27);
+            txtNewProgram.TabIndex = 9;
+            // 
+            // btnAddProgram
+            // 
+            btnAddProgram.Location = new Point(910, 315);
+            btnAddProgram.Name = "btnAddProgram";
+            btnAddProgram.Size = new Size(139, 60);
+            btnAddProgram.TabIndex = 10;
+            btnAddProgram.Text = "Додати програму";
+            // 
+            // btnRemoveProgram
+            // 
+            btnRemoveProgram.BackColor = Color.Firebrick;
+            btnRemoveProgram.Font = new Font("Segoe UI Symbol", 10.2F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            btnRemoveProgram.Location = new Point(722, 394);
+            btnRemoveProgram.Name = "btnRemoveProgram";
+            btnRemoveProgram.Size = new Size(327, 65);
+            btnRemoveProgram.TabIndex = 11;
+            btnRemoveProgram.Text = "Видалити обрану програму";
+            btnRemoveProgram.UseVisualStyleBackColor = false;
+            // 
+            // btnViewLog
+            // 
+            btnViewLog.Location = new Point(26, 60);
+            btnViewLog.Name = "btnViewLog";
+            btnViewLog.Size = new Size(178, 50);
+            btnViewLog.TabIndex = 12;
+            btnViewLog.Text = "Перегляд звiту";
+            // 
+            // btnViewProcesses
+            // 
+            btnViewProcesses.Location = new Point(1055, 45);
+            btnViewProcesses.Name = "btnViewProcesses";
+            btnViewProcesses.Size = new Size(200, 50);
+            btnViewProcesses.TabIndex = 13;
+            btnViewProcesses.Text = "Перегляд запущених програм";
+            // 
+            // btnViewJson
+            // 
+            btnViewJson.BackColor = Color.Coral;
+            btnViewJson.Font = new Font("Segoe UI Symbol", 10.2F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            btnViewJson.Location = new Point(1058, 515);
+            btnViewJson.Name = "btnViewJson";
+            btnViewJson.Size = new Size(200, 50);
+            btnViewJson.TabIndex = 14;
+            btnViewJson.Text = "Перегляд settings.json";
+            btnViewJson.UseVisualStyleBackColor = false;
+            // 
+            // btnRefreshLog
+            // 
+            btnRefreshLog.Location = new Point(26, 213);
+            btnRefreshLog.Name = "btnRefreshLog";
+            btnRefreshLog.Size = new Size(176, 48);
+            btnRefreshLog.TabIndex = 15;
+            btnRefreshLog.Text = "Оновити звiт";
+            // 
+            // btnClearLog
+            // 
+            btnClearLog.Location = new Point(26, 137);
+            btnClearLog.Name = "btnClearLog";
+            btnClearLog.Size = new Size(176, 50);
+            btnClearLog.TabIndex = 16;
+            btnClearLog.Text = "Очистити звiт";
+            // 
+            // btnOpenTextInput
+            // 
+            btnOpenTextInput.BackColor = SystemColors.MenuHighlight;
+            btnOpenTextInput.Font = new Font("Segoe UI Symbol", 10.8F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            btnOpenTextInput.Location = new Point(213, 461);
+            btnOpenTextInput.Name = "btnOpenTextInput";
+            btnOpenTextInput.Size = new Size(200, 80);
+            btnOpenTextInput.TabIndex = 17;
+            btnOpenTextInput.Text = "Перевiрка заборонених слiв";
+            btnOpenTextInput.UseVisualStyleBackColor = false;
+            // 
+            // label1
+            // 
+            label1.AutoSize = true;
+            label1.Location = new Point(73, 15);
+            label1.Name = "label1";
+            label1.Size = new Size(50, 20);
+            label1.TabIndex = 18;
+            label1.Text = "Шлях ";
+            // 
+            // Form1
+            // 
+            ClientSize = new Size(1270, 678);
+            Controls.Add(label1);
+            Controls.Add(txtPath);
+            Controls.Add(btnSave);
+            Controls.Add(chkStatistics);
+            Controls.Add(chkModeration);
+            Controls.Add(ForbiddenWords);
+            Controls.Add(txtNewWord);
+            Controls.Add(btnAddWord);
+            Controls.Add(btnRemoveWord);
+            Controls.Add(ForbiddenPrograms);
+            Controls.Add(txtNewProgram);
+            Controls.Add(btnAddProgram);
+            Controls.Add(btnRemoveProgram);
+            Controls.Add(btnViewLog);
+            Controls.Add(btnViewProcesses);
+            Controls.Add(btnViewJson);
+            Controls.Add(btnRefreshLog);
+            Controls.Add(btnClearLog);
+            Controls.Add(btnOpenTextInput);
+            Name = "Form1";
             Text = "Spy_2._0";
             ResumeLayout(false);
             PerformLayout();
         }
+        private Label label1;
     }
 }
-

